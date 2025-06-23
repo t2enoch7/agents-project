@@ -1,0 +1,29 @@
+{
+  "short_name": "Health Insights",
+  "name": "Health Insights - Multi-Agent Patient Outcomes System",
+  "description": "A comprehensive healthcare platform for patient-reported outcomes using multi-agent AI systems",
+  "icons": [
+    {
+      "src": "favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "logo192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "logo512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#3d98f4",
+  "background_color": "#f8fafc",
+  "orientation": "portrait-primary",
+  "categories": ["health", "medical", "productivity"],
+  "lang": "en"
+}
