@@ -1130,5 +1130,3 @@ You must output a JSON object with the following keys:
   - Keys should be general categories (e.g., `pain_level`, `fatigue_level`, `mood_description`, `medication_adherence_issue`, `general_wellbeing`).
   - Values should be appropriate data types (e.g., integer for level, string for description, boolean).
   - This object should be populated only when relevant data is present.
-
-"""
