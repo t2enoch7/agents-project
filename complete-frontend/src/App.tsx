@@ -1,73 +1,55 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider, useAuth } from './context/AuthContext';
-import WelcomePage from './pages/WelcomePage';
-import DashboardPage from './pages/DashboardPage';
-import ChatPage from './pages/ChatPage';
-import Header from './components/Header';
+import React from "react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import WelcomePage from "./pages/WelcomePage";
+import PatientChatPage from "./pages/PatientChatPage";
+import SummaryPage from "./pages/SummaryPage";
+import DashboardPage from "./pages/DashboardPage";
+import { useAuth } from "./context/AuthContext";
 
-// Protected Route Component
-const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { isAuthenticated, isLoading } = useAuth();
+function ProtectedRoute({
+  children,
+  role,
+}: {
+  children: React.ReactNode;
+  role: "patient" | "clinician";
+}) {
+  const { user } = useAuth();
+  if (!user) return <Navigate to="/" replace />;
+  if (role && user.role !== role) return <Navigate to="/" replace />;
+  return <>{children}</>;
+}
 
-  if (isLoading) {
-    return <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-      <div className="text-gray-600">Loading...</div>
-    </div>;
-  }
-
-  return isAuthenticated ? <>{children}</> : <Navigate to="/" replace />;
-};
-
-// Layout Component with Header
-const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { isAuthenticated } = useAuth();
-
+export default function App() {
   return (
-    <div className="min-h-screen bg-slate-50">
-      {isAuthenticated && <Header />}
-      {children}
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<WelcomePage />} />
+        <Route
+          path="/chat"
+          element={
+            <ProtectedRoute role="patient">
+              <PatientChatPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/summary"
+          element={
+            <ProtectedRoute role="patient">
+              <SummaryPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute role="clinician">
+              <DashboardPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </BrowserRouter>
   );
-};
-
-// Main App Component
-const AppContent: React.FC = () => {
-  return (
-    <Router>
-      <Layout>
-        <Routes>
-          <Route path="/" element={<WelcomePage />} />
-          <Route
-            path="/dashboard"
-            element={
-              <ProtectedRoute>
-                <DashboardPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/chat"
-            element={
-              <ProtectedRoute>
-                <ChatPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </Layout>
-    </Router>
-  );
-};
-
-// Root App Component with AuthProvider
-const App: React.FC = () => {
-  return (
-    <AuthProvider>
-      <AppContent />
-    </AuthProvider>
-  );
-};
-
-export default App;
+}
