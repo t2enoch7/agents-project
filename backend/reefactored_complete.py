@@ -363,7 +363,7 @@ class BaseADKAgent(Agent, ABC):
 
         self.db_manager = db_manager
         self._llm_instance = llm_instance # Store our actual LLM instance for use in run() methods
-        self.agent_name = name
+        # The agent_name is no longer a separate field; use self.name directly from ADK Agent base
         self._description = description # Store description for the property
 
     @property
@@ -434,10 +434,10 @@ class CompanionAgent(BaseADKAgent):
             instructions_file=self._instructions_file, # instructions_file is needed by BaseADKAgent to load content
             tools=[]
         )
-        logger.info(f"{self.agent_name} initialized.")
+        logger.info(f"{self.name} initialized.") # Changed from self.agent_name to self.name
 
     async def run(self, state: dict) -> dict:
-        logger.info(f"{self.agent_name} executing for patient: {state['patient_id']}")
+        logger.info(f"{self.name} executing for patient: {state['patient_id']}") # Changed from self.agent_name to self.name
 
         patient_state = state.copy()
         conversation_history = patient_state.get("conversation_history", [])
@@ -486,7 +486,7 @@ class CompanionAgent(BaseADKAgent):
             pro_intro_statement = llm_response["pro_intro_statement"]
 
         except Exception as e:
-            logger.error(f"Error generating {self.agent_name} response for {patient_state['patient_id']}: {e}", exc_info=True)
+            logger.error(f"Error generating {self.name} response for {patient_state['patient_id']}: {e}", exc_info=True) # Changed from self.agent_name to self.name
             agent_response = "I'm sorry, I'm having trouble connecting right now. Can we try again later?"
             new_emotional_state = patient_state.get("emotional_state", "neutral")
             transition_to_adaptive = False
@@ -535,10 +535,10 @@ class AdaptiveQuestionnaireAgent(BaseADKAgent):
             instructions_file=self._instructions_file, # instructions_file is needed by BaseADKAgent to load content
             tools=[]
         )
-        logger.info(f"{self.agent_name} initialized.")
+        logger.info(f"{self.name} initialized.") # Changed from self.agent_name to self.name
 
     async def run(self, state: dict) -> dict:
-        logger.info(f"{self.agent_name} executing for patient: {state['patient_id']}")
+        logger.info(f"{self.name} executing for patient: {state['patient_id']}") # Changed from self.agent_name to self.name
 
         patient_state = state.copy()
         conversation_history = patient_state.get("conversation_history", [])
@@ -599,7 +599,7 @@ class AdaptiveQuestionnaireAgent(BaseADKAgent):
             is_questionnaire_complete = llm_response["is_questionnaire_complete"]
 
         except Exception as e:
-            logger.error(f"Error generating {self.agent_name} response for {patient_state['patient_id']}: {e}", exc_info=True)
+            logger.error(f"Error generating {self.name} response for {patient_state['patient_id']}: {e}", exc_info=True) # Changed from self.agent_name to self.name
             agent_question = "I'm sorry, I'm having a little trouble understanding. Could you please rephrase?"
             new_emotional_state = patient_state.get("emotional_state", "neutral")
             pro_data_extracted = {}
@@ -614,14 +614,14 @@ class AdaptiveQuestionnaireAgent(BaseADKAgent):
         if is_questionnaire_complete and pro_data_extracted:
             patient_state["current_agent_flow_flag"] = "trend_monitoring"
             pro_data_to_save = pro_data_extracted
-            logger.info(f"{self.agent_name} completing for {patient_state['patient_id']} and recommending transition to Trend Monitoring.")
+            logger.info(f"{self.name} completing for {patient_state['patient_id']} and recommending transition to Trend Monitoring.") # Changed from self.agent_name to self.name
         else:
             patient_state["current_agent_flow_flag"] = "adaptive_questionnaire"
-            logger.info(f"{self.agent_name} continuing for {patient_state['patient_id']}.")
+            logger.info(f"{self.name} continuing for {patient_state['patient_id']}.") # Changed from self.agent_name to self.name
 
         if pro_data_to_save:
             anonymized_pro_data = anonymize_data(pro_data_to_save)
-            await self.db_manager.save_pro_data(patient_state["patient_id"], anonymized_pro_data, self.agent_name)
+            await self.db_manager.save_pro_data(patient_state["patient_id"], anonymized_pro_data, self.name) # Changed from self.agent_name to self.name
             patient_state["latest_pro_data_collected"] = anonymized_pro_data
 
         await self.db_manager.save_patient_state(patient_state)
@@ -660,10 +660,10 @@ class TrendMonitoringAgent(BaseADKAgent):
             instructions_file=self._instructions_file, # instructions_file is needed by BaseADKAgent to load content
             tools=[]
         )
-        logger.info(f"{self.agent_name} initialized.")
+        logger.info(f"{self.name} initialized.") # Changed from self.agent_name to self.name
 
     async def run(self, state: dict) -> dict:
-        logger.info(f"{self.agent_name} executing for patient: {state['patient_id']}")
+        logger.info(f"{self.name} executing for patient: {state['patient_id']}") # Changed from self.agent_name to self.name
 
         patient_state = state.copy()
         patient_id = patient_state["patient_id"]
@@ -702,7 +702,7 @@ class TrendMonitoringAgent(BaseADKAgent):
             summary_text = llm_response["summary_text"]
 
         except Exception as e:
-            logger.error(f"Error generating {self.agent_name} response for {patient_id}: {e}", exc_info=True)
+            logger.error(f"Error generating {self.name} response for {patient_id}: {e}", exc_info=True) # Changed from self.agent_name to self.name
             alert_type = "no_alert"
             severity = "none"
             summary_text = "Automated trend analysis currently unavailable due to a system issue."
@@ -718,7 +718,7 @@ class TrendMonitoringAgent(BaseADKAgent):
             insights_to_save["alert_type"],
             insights_to_save["severity"],
             insights_to_save["summary_text"],
-            self.agent_name
+            self.name # Changed from self.agent_name to self.name
         )
 
         patient_state["current_agent_flow_flag"] = "completed"
@@ -1130,3 +1130,4 @@ You must output a JSON object with the following keys:
   - Keys should be general categories (e.g., `pain_level`, `fatigue_level`, `mood_description`, `medication_adherence_issue`, `general_wellbeing`).
   - Values should be appropriate data types (e.g., integer for level, string for description, boolean).
   - This object should be populated only when relevant data is present.
+"""
