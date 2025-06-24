@@ -1,0 +1,5 @@
+app_name: PRO_MultiAgent
+entrypoint: agents/pipeline_agent.py
+agent_name: patient_pro_pipeline
+description: >
+  Multi-agent pipeline for managing patient-reported outcomes using Google's ADK.
