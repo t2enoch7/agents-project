@@ -1,0 +1,9 @@
+# synthetic_data/patient_data.json
+{
+  "patient_id": "patient_123",
+  "pro_history": [
+    {"date": "2025-06-01", "mood": "anxious", "pain": 6, "sleep": 4},
+    {"date": "2025-06-10", "mood": "sad", "pain": 7, "sleep": 3},
+    {"date": "2025-06-20", "mood": "neutral", "pain": 5, "sleep": 5}
+  ]
+}
