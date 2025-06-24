@@ -1,12 +1,10 @@
-# main.py
-
 import os
 import logging
 import json # Added for pretty printing JSON output in response
 
 from google.generative_agent import AgentState
 from google.adk.agents import SequentialAgent
-from google.adk import agent_util
+from google.adk import agent_util # Still needed for environment setup
 
 from subagents.companion_agent import CompanionPhaseAgent
 from subagents.adaptive_questionnaire_agent import AdaptiveQuestionnairePhaseAgent
@@ -66,6 +64,7 @@ class PROWorkflowAgent(SequentialAgent):
         save_state('pro_workflow_states', self.patient_id, self.state.as_dict())
         logging.info(f"PROWorkflowAgent state saved for patient {self.patient_id}.")
 
+    # The invoke method of PROWorkflowAgent will be called directly by ADK
     def invoke(self, input_state: AgentState):
         """
         The main invocation method for the PROWorkflowAgent.
@@ -107,10 +106,6 @@ class PROWorkflowAgent(SequentialAgent):
         # After any phase, save the updated state
         self._save_workflow_state()
 
-        # The invoke method of a SequentialAgent implicitly returns the modified state.
-        # However, for the ADK `agent_callback` signature, we need to return a string.
-        # We extract the relevant user-facing response from the internal state.
-
         # For the ADK web interface, we want to return a summary of the current turn.
         # This part requires careful formatting for user readability.
         response_parts = []
@@ -140,42 +135,22 @@ class PROWorkflowAgent(SequentialAgent):
 
         return "\n\n".join(response_parts)
 
+# Initialize Firestore client globally/early
+initialize_firestore_client()
 
-def main():
-    # Initialize Firestore client before starting agents
-    initialize_firestore_client()
+# Get patient ID from environment or configuration
+patient_id = os.environ.get("PATIENT_ID", "patient_001")
+logging.info(f"Setting up PRO system for patient ID: {patient_id}")
 
-    # Get patient ID from environment or configuration
-    patient_id = os.environ.get("PATIENT_ID", "patient_001")
-    logging.info(f"Starting PRO system for patient ID: {patient_id}")
+# Instantiate the top-level PRO Workflow Agent
+# This instance will be picked up by ADK as the root agent.
+agent = PROWorkflowAgent(patient_id=patient_id)
 
-    # Initialize the top-level PRO Workflow Agent
-    pro_workflow_agent = PROWorkflowAgent(patient_id=patient_id)
+# The agent_util.init() call is still important for ADK environment setup,
+# but we no longer pass a callback to .run() because ADK directly invokes
+# the 'invoke' method on the global 'agent' instance.
+agent_util.init()
 
-    # Initialize the ADK agent utility
-    adk_agent = agent_util.init()
-
-    # The adk_agent.run() method provides an interface for interacting with the agent.
-    # It takes a callback function that handles the actual agent logic.
-    # The callback receives a 'prompt' (user input string) and returns the agent's response string.
-    def agent_callback(prompt: str) -> str:
-        # Create a transient AgentState to pass the user's prompt to the workflow agent
-        input_state_for_workflow = AgentState(initial_state={'patient_response': prompt})
-
-        # If it's the very first run (no patient_response provided yet, or initial state),
-        # trigger the companion agent to start the conversation.
-        # This flag ensures the CompanionAgent runs on initial ADK start.
-        if not prompt and pro_workflow_agent.state.get('status') == 'ready_to_start':
-            input_state_for_workflow.set('initial_trigger', True)
-
-        # Invoke the main workflow agent with the current user input
-        # The invoke method will update pro_workflow_agent.state directly.
-        # It also returns the formatted string response for the user.
-        return pro_workflow_agent.invoke(input_state_for_workflow)
-
-    # Start the agent execution loop
-    adk_agent.run(agent_callback)
-
-if __name__ == "__main__":
-    main()
+# No main() function or if __name__ == "__main__": block needed for ADK direct run,
+# as ADK handles the execution flow. The global 'agent' variable is the entry point.
 
