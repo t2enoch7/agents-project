@@ -10,12 +10,20 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
       <Header />
-      <main className="flex-1 flex flex-col items-center justify-center">
-        {!selectedPatient ? (
-          <PatientSearch onSelect={setSelectedPatient} />
-        ) : (
-          <PatientDashboard patient={selectedPatient} />
-        )}
+      <main
+        className="flex-1 flex flex-col items-center justify-center"
+        aria-label="Clinician dashboard main content"
+      >
+        <section
+          className="w-full max-w-2xl p-4"
+          aria-label="Patient search section"
+        >
+          {!selectedPatient ? (
+            <PatientSearch onSelect={setSelectedPatient} />
+          ) : (
+            <PatientDashboard patient={selectedPatient} />
+          )}
+        </section>
       </main>
     </div>
   );

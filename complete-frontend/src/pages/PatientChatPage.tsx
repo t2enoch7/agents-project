@@ -11,11 +11,11 @@ export default function PatientChatPage() {
   const { chat, addMessage, resetChat } = useChat();
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const [showQuestionnaire, setShowQuestionnaire] = useState(false);
   const [questionnaireAnswers, setQuestionnaireAnswers] = useState<Record<
     string,
     string
   > | null>(null);
+  const [showQuestionnaire, setShowQuestionnaire] = useState(false);
   const navigate = useNavigate();
 
   // On first load, prompt the user
@@ -29,12 +29,16 @@ export default function PatientChatPage() {
     }
   }, [chat, addMessage]);
 
-  // After first user message, show questionnaire
+  // Show questionnaire after the first user message
   useEffect(() => {
-    if (chat.length === 2 && chat[1].sender === "user") {
+    if (
+      !showQuestionnaire &&
+      chat.length > 1 &&
+      chat.some((msg, idx) => idx > 0 && msg.sender === "user")
+    ) {
       setShowQuestionnaire(true);
     }
-  }, [chat]);
+  }, [chat, showQuestionnaire]);
 
   const handleSend = async () => {
     if (!input.trim()) return;
@@ -60,6 +64,7 @@ export default function PatientChatPage() {
     setLoading(true);
     await saveQuestionnaireAnswers("q1", answers);
     setQuestionnaireAnswers(answers);
+    setShowQuestionnaire(false);
     setLoading(false);
     resetChat();
     navigate("/summary", { state: { answers } });
@@ -68,8 +73,15 @@ export default function PatientChatPage() {
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
       <Header />
-      <main className="flex-1 flex flex-col items-center justify-center">
-        <div className="w-full max-w-2xl p-4">
+      <main
+        className="flex-1 flex flex-col items-center justify-center"
+        aria-label="Patient chat main content"
+      >
+        <section
+          className="w-full max-w-2xl p-4"
+          aria-label="Chat conversation"
+          tabIndex={0}
+        >
           {chat.map((msg, idx) => (
             <div
               key={idx}
@@ -78,22 +90,36 @@ export default function PatientChatPage() {
               }`}
             >
               <div
-                className={`rounded-lg px-4 py-2 ${
+                className={`rounded-lg px-4 py-2 max-w-[80%] break-words shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                   msg.sender === "user"
-                    ? "bg-blue-600 text-white"
-                    : "bg-gray-200 text-black"
+                    ? "bg-blue-700 text-white"
+                    : "bg-white text-gray-900 border border-gray-200"
                 }`}
+                tabIndex={0}
+                aria-label={
+                  msg.sender === "user" ? "Your message" : "Bot message"
+                }
               >
                 {msg.text}
               </div>
             </div>
           ))}
           {loading && <ActivityMonitor />}
-        </div>
-        {!showQuestionnaire && (
-          <div className="w-full max-w-2xl p-4 flex gap-2">
+          {/* Questionnaire is positioned within the chat window */}
+          {showQuestionnaire && !questionnaireAnswers && (
+            <section className="mt-6" aria-label="Health questionnaire">
+              <QuestionnaireComponent onSubmit={handleQuestionnaireSubmit} />
+            </section>
+          )}
+        </section>
+        {/* Hide or disable chat input while questionnaire is visible and not yet submitted */}
+        {(!showQuestionnaire || questionnaireAnswers) && (
+          <section
+            className="w-full max-w-2xl p-4 flex gap-2"
+            aria-label="Chat input"
+          >
             <input
-              className="form-input flex-1"
+              className="form-input flex-1 px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-lg"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSend()}
@@ -102,19 +128,14 @@ export default function PatientChatPage() {
               disabled={loading}
             />
             <button
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold"
+              className="bg-blue-700 text-white px-6 py-3 rounded-lg font-bold text-lg hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50"
               onClick={handleSend}
               disabled={loading}
               aria-busy={loading}
             >
               Send
             </button>
-          </div>
-        )}
-        {showQuestionnaire && !questionnaireAnswers && (
-          <div className="w-full max-w-2xl p-4">
-            <QuestionnaireComponent onSubmit={handleQuestionnaireSubmit} />
-          </div>
+          </section>
         )}
       </main>
     </div>
