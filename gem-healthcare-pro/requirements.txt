@@ -1,6 +1,0 @@
-google-generative-ai
-google-generative-agent
-google-cloud-firestore
-google-cloud-logging
-
-
