@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { getQuestionnaire, Questionnaire } from "../api/questionnaireApi";
+import { getQuestionnaire } from "../api/questionnaireApi";
 import ActivityMonitor from "./ActivityMonitor";
+import type { Questionnaire } from "../api/questionnaireApi";
 
 export default function QuestionnaireComponent({
   onSubmit,

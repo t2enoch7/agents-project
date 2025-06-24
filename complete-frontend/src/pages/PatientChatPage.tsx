@@ -5,6 +5,7 @@ import { sendMessage } from "../api/chatApi";
 import QuestionnaireComponent from "../components/Questionnaire";
 import { saveQuestionnaireAnswers } from "../api/questionnaireApi";
 import { useNavigate } from "react-router-dom";
+import Header from "../components/Header";
 
 export default function PatientChatPage() {
   const { chat, addMessage, resetChat } = useChat();
@@ -66,7 +67,7 @@ export default function PatientChatPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
-      <header className="p-4 bg-white shadow">Patient Chat</header>
+      <Header />
       <main className="flex-1 flex flex-col items-center justify-center">
         <div className="w-full max-w-2xl p-4">
           {chat.map((msg, idx) => (

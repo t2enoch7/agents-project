@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { Patient, getPatientHistory } from "../api/patientApi";
+import { getPatientHistory } from "../api/patientApi";
+import type { Patient } from "../api/patientApi";
 import { sendNotification } from "../api/notificationApi";
 
 export default function PatientDashboard({ patient }: { patient: Patient }) {

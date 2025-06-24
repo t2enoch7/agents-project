@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { searchPatient, Patient } from "../api/patientApi";
+import { searchPatient } from "../api/patientApi";
+import type { Patient } from "../api/patientApi";
 
 export default function PatientSearch({
   onSelect,
