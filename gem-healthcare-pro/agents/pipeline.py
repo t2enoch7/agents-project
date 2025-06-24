@@ -1,13 +1,14 @@
 from google.adk.agents import SequentialAgent
-from sub_agents.companion_agent import get_companion_agent
-from sub_agents.adaptive_questionnaire_agent import get_questionnaire_agent
-from sub_agents.trend_monitoring_agent import get_trend_monitoring_agent
+from sub_agents.companion_agent import companion_agent
+from sub_agents.adaptive_questionnaire_agent import adaptive_questionnaire_agent
+from sub_agents.trend_monitoring_agent import trend_monitoring_agent
 
-pipeline = SequentialAgent(
-    name="PatientPROPipeline",
+pros_pipeline = SequentialAgent(
+    name="PROsPipeline",
+    description="Collects check-in data, adapts questionnaires, and analyzes health trends.",
     sub_agents=[
-        get_companion_agent(),
-        get_questionnaire_agent(),
-        get_trend_monitoring_agent()
+        companion_agent,
+        adaptive_questionnaire_agent,
+        trend_monitoring_agent
     ]
 )

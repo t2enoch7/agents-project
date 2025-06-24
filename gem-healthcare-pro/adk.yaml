@@ -1,0 +1,24 @@
+name: pros-healthcare-pipeline
+version: 0.1.0
+description: Multi-Agent PROs Healthcare Pipeline for patient check-ins and insights
+
+# Specify the entrypoint agent (your SequentialAgent pipeline)
+agent:
+  type: pipeline
+  path: agents.pipeline.pros_pipeline
+
+# Optional: runtime settings (can specify model, environment variables, etc.)
+runtime:
+  model: gemini-1.5-pro
+  max_tokens: 1024
+
+# Resources, environment variables, or secrets can be added here if needed
+# environment:
+#   - name: OPENAI_API_KEY
+#     from_secret: openai_api_key
+
+# Optional web server config (port, cors, etc.)
+web:
+  port: 8080
+  cors_origins:
+    - "*"

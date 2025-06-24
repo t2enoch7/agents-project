@@ -1,40 +1,75 @@
 import asyncio
-import os, json
-from google.adk.runners import Runner
-from google.adk.sessions import InMemorySessionService
-from agents.pipeline import pipeline
-from utils.helpers import show_state, save_session_to_file
+from agents.pipeline import pros_pipeline  # Your SequentialAgent pipeline
+from services.session_service import InMemorySessionService
+from runners.agent_runner import Runner
 
+# === INITIAL STATE SETUP ===
 initial_state = {
-    "interaction_history": [],
-    "emotion": "",
-    "symptom_feedback": [],
-    "alerts": [],
+    "user_name": "Brandon",
+    "historical_data": [
+        {"date": "2024-06-01", "symptoms": "fatigue"},
+        {"date": "2024-06-05", "symptoms": "fatigue, headache"},
+        {"date": "2024-06-10", "symptoms": "dizzy, fatigue"}
+    ],
+    "checkin": "",
+    "qa": "",
+    "alerts": ""
 }
 
+APP_NAME = "PROsHealthApp"
+USER_ID = "brandon123"
+
+# === SETUP SESSION SERVICE ===
+session_service = InMemorySessionService()
+
 async def main_async():
-    app_name = "PRO_Health"
-    user_id = "patient_001"
-
-    session_service = InMemorySessionService()
-    session = session_service.create_session(app_name, user_id, initial_state)
+    # === CREATE SESSION ===
+    session = session_service.create_session(
+        app_name=APP_NAME,
+        user_id=USER_ID,
+        state=initial_state
+    )
     session_id = session.id
+    print(f"[✓] New session started: {session_id}")
 
-    runner = Runner(agent=pipeline, app_name=app_name, session_service=session_service)
+    # === SETUP RUNNER ===
+    runner = Runner(
+        agent=pros_pipeline,  # The full agent pipeline
+        app_name=APP_NAME,
+        session_service=session_service
+    )
 
-    print("👋 Welcome to the Patient Check-In Agent.\n(Type 'exit' to quit)\n")
+    # === CONVERSATION LOOP ===
+    print("\n[Patient Check-in System]")
+    print("Type your symptom update. Type 'exit' to stop.\n")
 
     while True:
-        user_input = input("You: ")
+        user_input = input("You: ").strip()
+
         if user_input.lower() in ["exit", "quit"]:
+            print("Goodbye! Session ended.")
             break
 
-        result = await runner.run(user_id=user_id, session_id=session_id, input=user_input)
-        print("Agent:", result.output)
+        # Run the pipeline with input
+        result = await runner.run(
+            user_id=USER_ID,
+            session_id=session_id,
+            input=user_input
+        )
 
-    final_session = session_service.get_session(app_name, user_id, session_id)
-    show_state(final_session)
-    save_session_to_file(final_session, user_id)
+        print(f"\n[System]: {result.output}\n")
+
+    # === FINAL STATE ===
+    final = session_service.get_session(
+        app_name=APP_NAME,
+        user_id=USER_ID,
+        session_id=session_id
+    )
+
+    print("\n[Final Session State]:")
+    for k, v in final.state.items():
+        print(f"{k}: {v}")
+
 
 def main():
     asyncio.run(main_async())

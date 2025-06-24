@@ -1,10 +1,8 @@
 from google.adk.agents import LlmAgent
-from tools.sentiment_tool import SentimentAnalysisTool
 
-def get_companion_agent():
-    return LlmAgent(
-        name="CompanionAgent",
-        instruction="Use SentimentAnalysisAPI to detect patient's emotion.",
-        tools=[SentimentAnalysisTool()],
-        output_key="emotion"
-    )
+companion_agent = LlmAgent(
+    name="CompanionAgent",
+    model="gemini-1.5-pro",
+    instruction="Initiate a friendly patient check-in. Ask how they are feeling today.",
+    output_key="checkin"
+)

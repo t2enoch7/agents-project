@@ -1,11 +1,12 @@
 from google.adk.agents import LlmAgent
 
-def get_questionnaire_agent():
-    return LlmAgent(
-        name="AdaptiveQuestionnaireAgent",
-        instruction="""
-        Use emotion from state['emotion'] to generate 1 follow-up question.
-        If sad, ask about sleep. If happy, ask what’s going well.
-        """,
-        output_key="symptom_feedback"
-    )
+adaptive_questionnaire_agent = LlmAgent(
+    name="AdaptiveQuestionnaireAgent",
+    model="gemini-1.5-pro",
+    instruction=(
+        "Based on the user's check-in in state['checkin'], ask follow-up questions. "
+        "Adapt tone and complexity to the patient's language. "
+        "Store the responses in state['qa']."
+    ),
+    output_key="qa"
+)
